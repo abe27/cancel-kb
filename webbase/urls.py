@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.urls import path
 
 admin.site.site_title = "KB Web Application"
-admin.site.site_header = "KBI Web Application"
+admin.site.site_header = "KB Web Application"
 admin.site.index_title = "KB Management System"
 # admin.site.site_url = "/"
 # admin.site.enable_nav_sidebar = True
