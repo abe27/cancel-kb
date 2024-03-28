@@ -181,6 +181,10 @@ class TrackAdmin(admin.ModelAdmin):
         return obj.end_date
 
     end_dates.short_description = "End Date"
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+    
     pass
 
 
