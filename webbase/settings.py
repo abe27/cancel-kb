@@ -135,3 +135,5 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 DATABASE_ROUTERS = ["webbase.db_routes.DBRouter"]
+
+LINE_NOTIFY_TOKEN = os.environ.get('LINE_NOTIFY_TOKEN')

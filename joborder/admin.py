@@ -1,10 +1,9 @@
 from typing import Any
-from django.contrib import admin
-from django.db.models.query import QuerySet
-from django.http import HttpRequest
-from django.http.response import HttpResponse
+from django.contrib import admin,messages
+from django.conf import settings
 from django.utils.html import format_html
 import datetime
+import requests
 
 from joborder.models import JobOrder, JobToTrack, Track
 
@@ -80,13 +79,15 @@ class JobOrderAdmin(admin.ModelAdmin):
 
     is_status.short_description = "Status"
 
+    def message_user(self, request, message, level=messages.INFO, extra_tags='', fail_silently=False):
+        pass
+
     def change_view(self, request, object_id, form_url="", extra_context=None):
         extra_context = extra_context or {}
         extra_context["object_id"] = object_id
         return super().change_view(request, object_id, form_url, extra_context)
 
     def delete_model(self, request, obj):
-        print(obj.job_no)
         ### Update Tags
         track = Track.objects.filter(job_no=obj.job_no)
         for r in track:
@@ -107,6 +108,21 @@ class JobOrderAdmin(admin.ModelAdmin):
         obj.status = 1
         obj.rmtm_date = datetime.datetime.now()
         obj.save()
+        ### Alert Line notify
+        msg = f"message=เรียนทุกท่าน\nขณะนี้ระบบได้ทำการยกเลิกเอกสาร\nเลขที่ {str(obj.job_no).strip()}\nเรียบร้อยแล้วคะ"
+
+        try:
+            url = "https://notify-api.line.me/api/notify"
+            headers = {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Authorization': f'Bearer {settings.LINE_NOTIFY_TOKEN}'
+            }
+
+            response = requests.request("POST", url, headers=headers, data=msg.encode("utf-8"))
+            print(response.text)
+        except:
+            pass
+        # messages.success(request, msg)
         # return super().delete_model(request, obj)
 
     pass
