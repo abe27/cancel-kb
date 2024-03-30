@@ -21,7 +21,7 @@ class JobOrder(models.Model):
         app_label = "joborder"
         verbose_name = "ยกเลิก JOBORDER"
         verbose_name_plural = "ยกเลิก JOB ORDER"
-        ordering = ('-open_date','job_no')
+        ordering = ('-open_date','status','-job_no')
         
 
 class JobToTrack(models.Model):

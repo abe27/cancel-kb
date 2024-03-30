@@ -1,6 +1,8 @@
 from typing import Any
 from django.contrib import admin,messages
 from django.conf import settings
+from django.db.models.query import QuerySet
+from django.http import HttpRequest
 from django.utils.html import format_html
 import datetime
 import requests
@@ -27,7 +29,7 @@ class JobOrderAdmin(admin.ModelAdmin):
         "open_date",
         "mtm_date",
         "rmtm_date",
-        "user_id",
+        "status",
     )
 
     readonly_fields = (
@@ -79,15 +81,25 @@ class JobOrderAdmin(admin.ModelAdmin):
 
     is_status.short_description = "Status"
 
-    def message_user(self, request, message, level=messages.INFO, extra_tags='', fail_silently=False):
+    def message_user(self, request, message, level=messages.INFO, extra_tags='', fail_silently=True):
         pass
 
     def change_view(self, request, object_id, form_url="", extra_context=None):
         extra_context = extra_context or {}
         extra_context["object_id"] = object_id
         return super().change_view(request, object_id, form_url, extra_context)
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request)
+    
+    # def has_delete_permission(self, request, obj=None):
+    #     return False
 
     def delete_model(self, request, obj):
+        if obj.status == 1:
+            messages.error(request, "ไม่สามารถยกเลิกรายการนี้ได้เนื่องจากมีการยกเลิกแล้ว",fail_silently=True)
+            return
+        
         ### Update Tags
         track = Track.objects.filter(job_no=obj.job_no)
         for r in track:
@@ -118,11 +130,10 @@ class JobOrderAdmin(admin.ModelAdmin):
                 'Authorization': f'Bearer {settings.LINE_NOTIFY_TOKEN}'
             }
 
-            response = requests.request("POST", url, headers=headers, data=msg.encode("utf-8"))
-            print(response.text)
+            requests.request("POST", url, headers=headers, data=msg.encode("utf-8"))
         except:
             pass
-        # messages.success(request, msg)
+        messages.success(request, f"อัพเดทข้อมูล {str(obj.job_no).strip()} เรียบร้อยแล้ว", fail_silently=True)
         # return super().delete_model(request, obj)
 
     pass
