@@ -76,7 +76,9 @@ class JobOrderAdmin(admin.ModelAdmin):
     def is_status(self, obj):
         if obj.status == 1:
             return format_html("<span class='text-primary'>แสกนแล้ว</span>")
-
+        
+        if obj.status == 2:
+            return format_html("<span class='text-primary'>ยกเลิกแล้ว</span>")
         return format_html("<span class='text-bold'>-</span>")
 
     is_status.short_description = "Status"
@@ -96,7 +98,7 @@ class JobOrderAdmin(admin.ModelAdmin):
     #     return False
 
     def delete_model(self, request, obj):
-        if obj.status == 1:
+        if obj.status == 2:
             messages.error(request, "ไม่สามารถยกเลิกรายการนี้ได้เนื่องจากมีการยกเลิกแล้ว",fail_silently=True)
             return
         
@@ -106,18 +108,19 @@ class JobOrderAdmin(admin.ModelAdmin):
             r.end_date = datetime.datetime.now()
             r.user_id = None
             r.act_start_date = datetime.datetime.now()
+            r.status = 2
             r.save()
 
         ### Update JOTOORDER
         jobs = JobToTrack.objects.filter(job_no=obj.job_no)
         for r in jobs:
-            r.status = 1
+            r.status = 2
             r.save()
 
         ### UPDATE JOBORDER
         obj.mtm_date = datetime.datetime.now()
         obj.user_id = None
-        obj.status = 1
+        obj.status = 2
         obj.rmtm_date = datetime.datetime.now()
         obj.save()
         ### Alert Line notify
