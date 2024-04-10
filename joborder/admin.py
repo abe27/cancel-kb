@@ -108,19 +108,19 @@ class JobOrderAdmin(admin.ModelAdmin):
             r.end_date = datetime.datetime.now()
             r.user_id = None
             r.act_start_date = datetime.datetime.now()
-            r.status = 1
+            r.status = 2
             r.save()
 
         ### Update JOTOORDER
         jobs = JobToTrack.objects.filter(job_no=obj.job_no)
         for r in jobs:
-            r.status = 1
+            r.status = 2
             r.save()
 
         ### UPDATE JOBORDER
         obj.mtm_date = datetime.datetime.now()
         obj.user_id = None
-        obj.status = 1
+        obj.status = 2
         obj.rmtm_date = datetime.datetime.now()
         obj.save()
         ### Alert Line notify
