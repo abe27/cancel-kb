@@ -39,7 +39,7 @@ class JobToTrack(models.Model):
 class Track(models.Model):
     kanban_id = models.TextField(max_length=200, db_column="KANBAN", primary_key=True, editable=False)
     part_no = models.TextField(max_length=30, db_column="CPART_NO")
-    # step = models.IntegerField(db_column="STEP")
+    step = models.IntegerField(db_column="STEP")
     work_name = models.TextField(max_length=50, db_column="WORK_NAME")
     ct = models.IntegerField(db_column="CT")
     ac_ct =  models.TextField(max_length=50, db_column="AC_CT")# AC_CT nvarchar(50) COLLATE Thai_CI_AS NULL,
