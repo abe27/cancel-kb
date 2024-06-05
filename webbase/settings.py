@@ -34,7 +34,7 @@ ALLOWED_HOSTS = ["https://edi-vcst.in.th","edi-vcst.in.th","125.25.57.91", ]
 CSRF_TRUSTED_ORIGINS = ["https://joborder.edi-vcst.in.th"]
 if DEBUG:
     ALLOWED_HOSTS = ["*"]
-    # CSRF_TRUSTED_ORIGINS = ["*"]
+    CSRF_TRUSTED_ORIGINS = ["*"]
 
 
 # Application definition
