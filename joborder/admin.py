@@ -103,19 +103,15 @@ class JobOrderAdmin(admin.ModelAdmin):
             return
         
         ### Update Tags
-        track = Track.objects.filter(job_no=obj.job_no)
-        for r in track:
-            r.end_date = datetime.datetime.now()
-            r.user_id = None
-            r.act_start_date = datetime.datetime.now()
-            r.status = 1
-            r.save()
+        Track.objects.filter(job_no=obj.job_no).update(
+            end_date = datetime.datetime.now(),
+            user_id = None,
+            act_start_date = datetime.datetime.now(),
+            status = 1,
+        )
 
         ### Update JOTOORDER
-        jobs = JobToTrack.objects.filter(job_no=obj.job_no)
-        for r in jobs:
-            r.status = 1
-            r.save()
+        JobToTrack.objects.filter(job_no=obj.job_no).update(status=1)
 
         ### UPDATE JOBORDER
         obj.mtm_date = datetime.datetime.now()
