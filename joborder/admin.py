@@ -98,37 +98,33 @@ class JobOrderAdmin(admin.ModelAdmin):
     #     return False
 
     def delete_model(self, request, obj):
-        jobNo = obj.job_no
         if obj.status == 1:
             messages.error(request, "ไม่สามารถยกเลิกรายการนี้ได้เนื่องจากมีการยกเลิกแล้ว",fail_silently=True)
             return
         
         ### Update Tags
-        track = Track.objects.get(job_no=obj.job_no)
-        track.delete()
-        # for r in track:
-        #     r.end_date = datetime.datetime.now()
-        #     r.user_id = None
-        #     r.act_start_date = datetime.datetime.now()
-        #     r.status = 1
-        #     r.save()
+        track = Track.objects.filter(job_no=obj.job_no)
+        for r in track:
+            r.end_date = datetime.datetime.now()
+            r.user_id = None
+            r.act_start_date = datetime.datetime.now()
+            r.status = 1
+            r.save()
 
         ### Update JOTOORDER
-        jobs = JobToTrack.objects.get(job_no=obj.job_no)
-        jobs.delete()
-        # for r in jobs:
-        #     r.status = 1
-        #     r.save()
+        jobs = JobToTrack.objects.filter(job_no=obj.job_no)
+        for r in jobs:
+            r.status = 1
+            r.save()
 
         ### UPDATE JOBORDER
-        # obj.mtm_date = datetime.datetime.now()
-        # obj.user_id = None
-        # obj.status = 1
-        # obj.rmtm_date = datetime.datetime.now()
-        # obj.save()
-        obj.delete()
+        obj.mtm_date = datetime.datetime.now()
+        obj.user_id = None
+        obj.status = 1
+        obj.rmtm_date = datetime.datetime.now()
+        obj.save()
         ### Alert Line notify
-        msg = f"message=เรียนทุกท่าน\nขณะนี้ระบบได้ทำการยกเลิกเอกสาร\nเลขที่ {str(jobNo).strip()}\nเรียบร้อยแล้วคะ"
+        msg = f"message=เรียนทุกท่าน\nขณะนี้ระบบได้ทำการยกเลิกเอกสาร\nเลขที่ {str(obj.job_no).strip()}\nเรียบร้อยแล้วคะ"
 
         try:
             url = "https://notify-api.line.me/api/notify"
