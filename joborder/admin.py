@@ -98,9 +98,9 @@ class JobOrderAdmin(admin.ModelAdmin):
     #     return False
 
     def delete_model(self, request, obj):
-        if obj.status == 1:
-            messages.error(request, "ไม่สามารถยกเลิกรายการนี้ได้เนื่องจากมีการยกเลิกแล้ว",fail_silently=True)
-            return
+        # if obj.status == 1:
+        #     messages.error(request, "ไม่สามารถยกเลิกรายการนี้ได้เนื่องจากมีการยกเลิกแล้ว",fail_silently=True)
+        #     return
         
         ### Update Tags
         Track.objects.filter(job_no=obj.job_no).update(
