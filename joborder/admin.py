@@ -1,5 +1,6 @@
+from collections.abc import Callable
 from typing import Any
-from django.contrib import admin,messages
+from django.contrib import admin, messages
 from django.conf import settings
 from django.db.models.query import QuerySet
 from django.http import HttpRequest
@@ -7,7 +8,7 @@ from django.utils.html import format_html
 import datetime
 import requests
 
-from joborder.models import JobOrder, JobToTrack, Track
+from joborder.models import JobOrder, JobToTrack, Track, TrackPL
 
 
 # Register your models here.
@@ -72,28 +73,29 @@ class JobOrderAdmin(admin.ModelAdmin):
 
     rmtm_dates.short_description = "RMTM Date"
 
-
     def is_status(self, obj):
         if obj.status == 1:
             return format_html("<span class='text-primary'>แสกนแล้ว</span>")
-        
+
         if obj.status == 2:
             return format_html("<span class='text-primary'>ยกเลิกแล้ว</span>")
         return format_html("<span class='text-bold'>-</span>")
 
     is_status.short_description = "Status"
 
-    def message_user(self, request, message, level=messages.INFO, extra_tags='', fail_silently=True):
+    def message_user(
+        self, request, message, level=messages.INFO, extra_tags="", fail_silently=True
+    ):
         pass
 
     def change_view(self, request, object_id, form_url="", extra_context=None):
         extra_context = extra_context or {}
         extra_context["object_id"] = object_id
         return super().change_view(request, object_id, form_url, extra_context)
-    
+
     def get_queryset(self, request):
         return super().get_queryset(request)
-    
+
     # def has_delete_permission(self, request, obj=None):
     #     return False
 
@@ -101,13 +103,13 @@ class JobOrderAdmin(admin.ModelAdmin):
         # if obj.status == 1:
         #     messages.error(request, "ไม่สามารถยกเลิกรายการนี้ได้เนื่องจากมีการยกเลิกแล้ว",fail_silently=True)
         #     return
-        
+
         ### Update Tags
         Track.objects.filter(job_no=obj.job_no).update(
-            end_date = datetime.datetime.now(),
-            user_id = None,
-            act_start_date = datetime.datetime.now(),
-            status = 1,
+            end_date=datetime.datetime.now(),
+            user_id=None,
+            act_start_date=datetime.datetime.now(),
+            status=1,
         )
 
         ### Update JOTOORDER
@@ -125,14 +127,18 @@ class JobOrderAdmin(admin.ModelAdmin):
         try:
             url = "https://notify-api.line.me/api/notify"
             headers = {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'Authorization': f'Bearer {settings.LINE_NOTIFY_TOKEN}'
+                "Content-Type": "application/x-www-form-urlencoded",
+                "Authorization": f"Bearer {settings.LINE_NOTIFY_TOKEN}",
             }
 
             requests.request("POST", url, headers=headers, data=msg.encode("utf-8"))
         except:
             pass
-        messages.success(request, f"อัพเดทข้อมูล {str(obj.job_no).strip()} เรียบร้อยแล้ว", fail_silently=True)
+        messages.success(
+            request,
+            f"อัพเดทข้อมูล {str(obj.job_no).strip()} เรียบร้อยแล้ว",
+            fail_silently=True,
+        )
         # return super().delete_model(request, obj)
 
     pass
@@ -194,10 +200,67 @@ class TrackAdmin(admin.ModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return False
-    
+
+    pass
+
+
+class TrackPLAdmin(admin.ModelAdmin):
+    search_fields = [
+        "kanban_id",
+        "job_no",
+        "part_no",
+    ]
+    list_display = [
+        # "kanban_id",
+        "job_no",
+        "part_no",
+        "track_id",
+        "_start_date",
+        "_end_date",
+        # "step",
+        "_status",
+    ]
+
+    def _start_date(self, obj):
+        return (obj.start_date).strftime("%Y-%m-%d")
+
+    _start_date.short_description = "Start Date"
+
+    def _end_date(self, obj):
+        if obj.end_date:
+            return (obj.end_date).strftime("%Y-%m-%d")
+        return "-"
+
+    _end_date.short_description = "End Date"
+
+    def _status(self, obj):
+        if obj.status == 0:
+            return format_html(f"<strong style='color:green;'>PL แสกนแล้ว</strong>")
+
+        return format_html(f"<strong style='color:red;'>ยังไม่แสกน PL</strong>")
+
+    _status.short_description = "Status"
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        queryset = queryset.order_by("kanban_id", "job_no", "part_no")
+        return queryset
+
+    list_per_page = 25
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
     pass
 
 
 admin.site.register(JobOrder, JobOrderAdmin)
 # admin.site.register(JobToTrack, JobToTrackAdmin)
 admin.site.register(Track, TrackAdmin)
+admin.site.register(TrackPL, TrackPLAdmin)

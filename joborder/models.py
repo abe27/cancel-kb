@@ -66,3 +66,39 @@ class Track(models.Model):
         verbose_name = "รายการ TRACK"
         verbose_name_plural = "รายการ TRACK"
         ordering = ('-job_no','step', 'start_date','-end_date')
+
+class TrackPL(models.Model):
+    kanban_id = models.TextField(max_length=200, db_column="KANBAN", primary_key=True, editable=False)
+    job_no = models.TextField(max_length=50, db_column="JOB_NO")
+    part_no = models.TextField(max_length=30, db_column="CPART_NO")
+    start_date = models.DateTimeField(db_column="STARTDATE")# STARTDATE datetime NULL,
+    end_date = models.DateTimeField(db_column="ENDDATE")# ENDDATE datetime NULL,
+    step = models.IntegerField(db_column="STEP")
+    status = models.IntegerField(db_column="STATUS")
+
+    def __str__(self):
+        return str(self.kanban_id).strip()
+    
+    def track_id(self):
+        txtScan = None
+        for i in range(0, 3):
+            a = 0
+            if i == 0:
+                a = str(self.kanban_id).find(",")
+                txtScan = str(self.kanban_id)[a + 1:]
+            if i == 1:
+                a = str(txtScan).find(",")
+                txtScan = str(txtScan)[a + 1:]
+            if i == 2:
+                a = str(txtScan).find(",")
+            
+            txt = str(txtScan[a+1:])
+            x = str(txt).find(",")
+        return txt[:x]
+
+    class Meta:
+        db_table = "TRACKPL"
+        app_label = "joborder"
+        verbose_name = "รายการสถานะ TRACKPL"
+        verbose_name_plural = "รายการสถานะ TRACKPL"
+        ordering = ('-start_date','step',"kanban_id")

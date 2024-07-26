@@ -4,7 +4,7 @@ class DBRouter:
     auth and contenttypes applications.
     """
 
-    db_list = ["JOBORDER","JOBTOTRACK","TRACK"]
+    db_list = ["JOBORDER","JOBTOTRACK","TRACK","TRACKPL"]
     app_disabled = ["joborder"]
 
     def db_for_read(self, model, **hints):
@@ -39,7 +39,6 @@ class DBRouter:
         Make sure the auth and contenttypes apps only appear in the
         'auth_db' database.
         """
-        print(app_label)
         if app_label in self.app_disabled:
             return False
 
